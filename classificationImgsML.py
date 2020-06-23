@@ -63,16 +63,16 @@ def plot_model_history(model_history):
     plt.show()
 
 # Define data generators
-train_dir = 'datasets/entrainement'
+train_dir = 'datasets/training'
 val_dir = 'datasets/test'
 
 # Get number of images for training and test data
 nbImgTrain = 0
 nbImgTest = 0
-for dire in os.listdir("datasets/entrainement"):
-    nbImgTrain += len(os.listdir("datasets/entrainement/" + dire))
-for dire in os.listdir("datasets/test"):
-    nbImgTest += len(os.listdir("datasets/test/" + dire))
+for direc in os.listdir(train_dir):
+    nbImgTrain += len(os.listdir("datasets/training/" + direc))
+for direc in os.listdir(val_dir):
+    nbImgTest += len(os.listdir("datasets/test/" + direc))
 
 num_train = nbImgTrain
 num_val = nbImgTest
@@ -125,21 +125,21 @@ while True:
         reponse = 'y'
         break
 if reponse == 'y': # Load model
-    listeDossiersModeles = os.listdir("modeles")
-    listeModeles = []
-    for dos in listeDossiersModeles:
-        for modele in os.listdir(os.path.join("modeles", dos)):
-            if os.path.isfile(os.path.join("modeles", dos, modele)) and ".h5" in modele:
-                listeModeles.append(os.path.join("modeles", dos, modele))
-            elif os.path.isdir(os.path.join("modeles", dos, modele)):
-                for fic in os.path.join("modeles", dos, modele):
-                    if os.path.isfile(os.path.join("modeles", dos, modele, fic)):
-                        listeModeles.append(os.path.join("modeles", dos, modele, fic))
-    if len(listeModeles) == 0:
+    listModelDirectories = os.listdir("models")
+    listModels = []
+    for direc in listModelDirectories:
+        for model in os.listdir(os.path.join("models", direc)):
+            if os.path.isfile(os.path.join("models", direc, model)) and ".h5" in model:
+                listModels.append(os.path.join("models", direc, model))
+            elif os.path.isdir(os.path.join("models", direc, model)):
+                for file in os.path.join("models", direc, model):
+                    if os.path.isfile(os.path.join("models", direc, model, file)):
+                        listModels.append(os.path.join("models", direc, model, file))
+    if len(listModels) == 0:
         sys.exit("No existing model found")
-    print("Choose a model (between 1 and " + str(len(listeModeles)) + ") : ")
-    for modele in listeModeles:
-        print(str(listeModeles.index(modele) + 1) + " : " + modele)
+    print("Choose a model (between 1 and " + str(len(listModels)) + ") : ")
+    for model in listModels:
+        print(str(listModels.index(model) + 1) + " : " + model)
     reponse = ""
     while True:
         reponse = input()
@@ -150,11 +150,11 @@ if reponse == 'y': # Load model
             continue
         if reponse < 1:
             print("Number too small !")
-        elif reponse > len(listeModeles):
+        elif reponse > len(listModels):
             print("Number too high !")
         else:
             break
-    model.load_weights(listeModeles[reponse - 1])
+    model.load_weights(listModels[reponse - 1])
 elif reponse == 'n': # Create new model
     print("Creating new model...")
 
@@ -167,12 +167,12 @@ model_info = model.fit_generator(
             validation_data=validation_generator,
             validation_steps=100)
 plot_model_history(model_info)
-nomModele = input("Enter a name to save your model (no need to add .h5 at the end. Default name is model.h5): ")
-if nomModele == "":
-    nomModele = "model"
+modelName = input("Enter a name to save your model (no need to add .h5 at the end. Default name is model.h5): ")
+if modelName == "":
+    modelName = "model"
 # Save model
 try:
-    os.mkdir(os.path.join("modeles", nomModele))
+    os.mkdir(os.path.join("models", modelName))
 except FileExistsError:
     pass
-model.save_weights(os.path.join("modeles", nomModele, nomModele + '.h5'))
+model.save_weights(os.path.join("models", modelName, modelName + '.h5'))

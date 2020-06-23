@@ -44,22 +44,22 @@ model.add(Dropout(0.5))
 model.add(Dense(7, activation='softmax'))
 
 # Get all existing models
-listeDossiersModeles = os.listdir("modeles")
-listeModeles = []
-for dos in listeDossiersModeles:
-    for modele in os.listdir(os.path.join("modeles", dos)):
-        if os.path.isfile(os.path.join("modeles", dos, modele)):
-            listeModeles.append(os.path.join("modeles", dos, modele))
-        elif os.path.isdir(os.path.join("modeles", dos, modele)):
-            for fic in os.path.join("modeles", dos, modele):
-                if os.path.isfile(os.path.join("modeles", dos, modele, fic)):
-                    listeModeles.append(os.path.join("modeles", dos, modele, fic))
-if len(listeModeles) == 0:
+listModelDirectories = os.listdir("models")
+listModels = []
+for direc in listModelDirectories:
+    for model in os.listdir(os.path.join("models", direc)):
+        if os.path.isfile(os.path.join("models", direc, model)):
+            listModels.append(os.path.join("models", direc, model))
+        elif os.path.isdir(os.path.join("models", direc, model)):
+            for file in os.path.join("models", direc, model):
+                if os.path.isfile(os.path.join("models", direc, model, file)):
+                    listModels.append(os.path.join("models", direc, model, file))
+if len(listModels) == 0:
     sys.exit("No existing model found")
 # Let user choose model
-print("Choose a model (between 1 and " + str(len(listeModeles)) + ") : ")
-for modele in listeModeles:
-    print(str(listeModeles.index(modele) + 1) + " : " + modele)
+print("Choose a model (between 1 and " + str(len(listModels)) + ") : ")
+for model in listModels:
+    print(str(listModels.index(model) + 1) + " : " + model)
 reponse = ""
 while True:
     reponse = input()
@@ -69,22 +69,22 @@ while True:
         pass
     if reponse < 1:
         print("Number too small !")
-    elif reponse > len(listeModeles):
+    elif reponse > len(listModels):
         print("Number too big !")
     else:
         break
 
-model.load_weights(listeModeles[reponse - 1])
+model.load_weights(listModels[reponse - 1])
 
 listeOutputs = [layer.output for layer in model.layers]
-    # prevents openCL usage and unnecessary logging messages
+# Prevents openCL usage and unnecessary logging messages
 cv2.ocl.setUseOpenCL(False)
 
-    # dictionary which assigns each label an emotion (alphabetical order)
-emotion_dict = {0: "COLERE", 1:"DEGOUT", 2: "PEUR", 3: "HEUREUX", 4: "NEUTRE", 5: "TRISTE", 6: "SURPRISE"}
+# Dictionary which assigns each label an emotion (alphabetical order)
+emotion_dict = {0: "ANGRY", 1:"DISGUSTED", 2: "SCARED", 3: "HAPPY", 4: "NEUTRAL", 5: "SAD", 6: "SURPRISED"}
 
-    # start the webcam feed
-# Check for usb camera. If none, checks for integrated camera
+# Start the webcam feed
+# Check for usb camera. If none, check for integrated camera
 cap = cv2.VideoCapture(1)
 if not cap.isOpened():
     print("No camera detected.")
@@ -106,7 +106,7 @@ if not cap.isOpened():
 profilCasc = cv2.CascadeClassifier("haarcascades/haarcascades/haarcascade_profileface.xml")
 facecasc = cv2.CascadeClassifier('haarcascades/haarcascades/haarcascade_frontalface_default.xml')
 detector = dlib.get_frontal_face_detector()
-predictor = dlib.shape_predictor("modeles/shape_predictor_68_face_landmarks.dat")
+predictor = dlib.shape_predictor("models/shape_predictor_68_face_landmarks.dat")
 time_start = 0
 time_end = 0
 nbDistractions = 0
@@ -114,21 +114,21 @@ time_start_film = time.time()
 
 # Start filming
 while True:
-        posVisage = 0
-        hauteurVisage = 0
+        posFace = 0
+        heightFace = 0
         # Find haar cascade to draw bounding box around face
         ret, frame = cap.read()
         if not ret:
             break
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         faces = facecasc.detectMultiScale(gray,scaleFactor=1.3, minNeighbors=5)
-        profils = profilCasc.detectMultiScale(gray, scaleFactor=1.3, minNeighbors=5)
+        profiles = profilCasc.detectMultiScale(gray, scaleFactor=1.3, minNeighbors=5)
         landmarks = detector(gray, 1)
 
         for (x, y, w, h) in faces: # Emotion detection
             cv2.rectangle(frame, (x, y-50), (x+w, y+h+10), (255, 0, 0), 2)
-            hauteurVisage = h + 10
-            posVisage = y
+            heightFace = h + 10
+            posFace = y
             roi_gray = gray[y:y + h, x:x + w]
             cropped_img = np.expand_dims(np.expand_dims(cv2.resize(roi_gray, (48, 48)), -1), 0)
             prediction = model.predict(cropped_img)
@@ -137,7 +137,7 @@ while True:
             cv2.putText(frame, label , (x+20, y-60), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)
             if maxindex == 3 :
                 heu += 1
-        for (x,y,w,h) in profils: # Detect profile faces and if user is distracted
+        for (x,y,w,h) in profiles: # Detect profile faces and if user is distracted
             cv2.rectangle(frame, (x, y-50), (x+w, y+h+10), (128, 128, 0), 2)
             if time_start == None:
                 time_start = time.time()
@@ -146,11 +146,11 @@ while True:
                 diff_time = time_end - time_start
                 if diff_time > 3:
                     cv2.putText(frame, "DISTRACTED", (0,50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0,255), 2, cv2.LINE_AA)
-        if len(profils) == 0: # Check if user is distracted (repetitive head rotation)
+        if len(profiles) == 0: # Check if user is distracted (repetitive head rotation)
             if time_start:
                 nbDistractions += 1
-                time_distrait = time_start - time_start_film
-                freqDistraction = time_distrait // nbDistractions
+                time_distracted = time_start - time_start_film
+                freqDistraction = time_distracted // nbDistractions
                 if freqDistraction <= 10:
                     cv2.putText(frame, "DISTRACTED", (0,50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0,255), 2, cv2.LINE_AA)
             time_start = None
@@ -161,7 +161,7 @@ while True:
             (x1, y1) = shape[62]
             (x2, y2) = shape[66]
             diffY = y2 - y1
-            if diffY >= (hauteurVisage // 8):
+            if diffY >= (heightFace // 8):
                 cv2.putText(frame, "TIRED", (0,100), cv2.FONT_HERSHEY_SIMPLEX, 1, (128,0,128), 2, cv2.LINE_AA)
         cv2.imshow('Video', frame)
         # Press q to quit
