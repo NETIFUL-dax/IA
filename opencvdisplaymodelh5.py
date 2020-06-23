@@ -47,19 +47,19 @@ model.add(Dense(7, activation='softmax'))
 listModelDirectories = os.listdir("models")
 listModels = []
 for direc in listModelDirectories:
-    for model in os.listdir(os.path.join("models", direc)):
-        if os.path.isfile(os.path.join("models", direc, model)):
-            listModels.append(os.path.join("models", direc, model))
-        elif os.path.isdir(os.path.join("models", direc, model)):
-            for file in os.path.join("models", direc, model):
-                if os.path.isfile(os.path.join("models", direc, model, file)):
-                    listModels.append(os.path.join("models", direc, model, file))
+    for _model in os.listdir(os.path.join("models", direc)):
+        if os.path.isfile(os.path.join("models", direc, _model)):
+            listModels.append(os.path.join("models", direc, _model))
+        elif os.path.isdir(os.path.join("models", direc, _model)):
+            for file in os.path.join("models", direc, _model):
+                if os.path.isfile(os.path.join("models", direc, _model, file)):
+                    listModels.append(os.path.join("models", direc, _model, file))
 if len(listModels) == 0:
     sys.exit("No existing model found")
 # Let user choose model
 print("Choose a model (between 1 and " + str(len(listModels)) + ") : ")
-for model in listModels:
-    print(str(listModels.index(model) + 1) + " : " + model)
+for _model in listModels:
+    print(str(listModels.index(_model) + 1) + " : " + _model)
 reponse = ""
 while True:
     reponse = input()
@@ -106,7 +106,7 @@ if not cap.isOpened():
 profilCasc = cv2.CascadeClassifier("haarcascades/haarcascades/haarcascade_profileface.xml")
 facecasc = cv2.CascadeClassifier('haarcascades/haarcascades/haarcascade_frontalface_default.xml')
 detector = dlib.get_frontal_face_detector()
-predictor = dlib.shape_predictor("models/shape_predictor_68_face_landmarks.dat")
+predictor = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
 time_start = 0
 time_end = 0
 nbDistractions = 0
