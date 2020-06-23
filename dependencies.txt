@@ -1,0 +1,10 @@
+Modules to import :
+numpy (1.18.4)
+matplotlib (3.2.1)
+opencv-contrib-python (4.2.0.34)
+opencv-python (4.2.0.34)
+keyboard (0.13.5)
+tensorflow (1.15.0)
+keras (2.3.1)
+dlib (19.19.0)
+imutils (0.5.3)
